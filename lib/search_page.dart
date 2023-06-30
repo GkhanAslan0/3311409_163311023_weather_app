@@ -78,7 +78,7 @@ class _SearchPageState extends State<SearchPage> {
                     );
                   },
                   child: Text(
-                    "Geri Dön",
+                    "Konuma dön",
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
