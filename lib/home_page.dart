@@ -20,6 +20,7 @@ class _HomePageState extends State<HomePage> {
   String code = 'home';
   Position? devicePosition;
   String? icon;
+  bool isFavorite = false;
 
   List<String> icons = [];
   List<double> temperatures = [];
@@ -145,57 +146,82 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                     ),
-                    Text("$temperature°C",
-                        style: TextStyle(
-                            fontSize: 60,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            shadows: <Shadow>[
-                              Shadow(
-                                  color: Colors.black,
-                                  blurRadius: 5,
-                                  offset: Offset(5, 5))
-                            ])),
+                    Text(
+                      "$temperature°C",
+                      style: TextStyle(
+                        fontSize: 60,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        shadows: <Shadow>[
+                          Shadow(
+                            color: Colors.black,
+                            blurRadius: 5,
+                            offset: Offset(5, 5),
+                          ),
+                        ],
+                      ),
+                    ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
                           location,
                           style: TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              shadows: <Shadow>[
-                                Shadow(
-                                    color: Colors.black,
-                                    blurRadius: 10,
-                                    offset: Offset(5, 5))
-                              ]),
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            shadows: <Shadow>[
+                              Shadow(
+                                color: Colors.black,
+                                blurRadius: 10,
+                                offset: Offset(5, 5),
+                              ),
+                            ],
+                          ),
                         ),
                         IconButton(
-                            onPressed: () async {
-                              final selectedCity = await Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => SearchPage()));
-                              location = selectedCity;
-                              getLocationDataFromAPI();
-                              getDailyForecastByLocation();
-                            },
-                            icon: const Icon(
-                              Icons.search_outlined,
-                              size: 32,
-                              color: Colors.black,
-                            ))
+                          onPressed: () async {
+                            final selectedCity = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => SearchPage(),
+                              ),
+                            );
+                            location = selectedCity;
+                            getLocationDataFromAPI();
+                            getDailyForecastByLocation();
+                          },
+                          icon: Icon(
+                            Icons.search_outlined,
+                            size: 32,
+                            color: Colors.black,
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(
                       height: 25,
                     ),
-                    buildWeatherCards(context)
+                    buildWeatherCards(context),
+                    const SizedBox(
+                      height: 25,
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        isFavorite ? Icons.star : Icons.star_border,
+                        size: 50,
+                        color: Colors.yellow,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          isFavorite = !isFavorite;
+                        });
+                      },
+                    ),
                   ],
                 ),
-              )),
+              ),
+            ),
     );
   }
 
@@ -203,15 +229,23 @@ class _HomePageState extends State<HomePage> {
     List<DailyWeatherCard> cards = [];
     int itemCount = temperatures.length;
     for (int i = 0; i < itemCount; i++) {
-      cards.add(DailyWeatherCard(
-          icon: icons[i], temperature: temperatures[i], date: dates[i]));
+      cards.add(
+        DailyWeatherCard(
+          icon: icons[i],
+          temperature: temperatures[i],
+          date: dates[i],
+        ),
+      );
     }
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.22,
       width: MediaQuery.of(context).size.width * 0.9,
-      child: ListView(
+      child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        children: cards,
+        itemCount: itemCount,
+        itemBuilder: (BuildContext context, int index) {
+          return cards[index];
+        },
       ),
     );
   }
@@ -220,36 +254,23 @@ class _HomePageState extends State<HomePage> {
     bool serviceEnabled;
     LocationPermission permission;
 
-    // Test if location services are enabled.
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      // Location services are not enabled don't continue
-      // accessing the position and request users of the
-      // App to enable the location services.
-      return Future.error('Location services are disabled.');
+      throw 'Location services are disabled.';
     }
 
     permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        // Permissions are denied, next time you could try
-        // requesting permissions again (this is also where
-        // Android's shouldShowRequestPermissionRationale
-        // returned true. According to Android guidelines
-        // your App should show an explanatory UI now.
-        return Future.error('Location permissions are denied');
+        throw 'Location permissions are denied';
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
-      // Permissions are denied forever, handle appropriately.
-      return Future.error(
-          'Location permissions are permanently denied, we cannot request permissions.');
+      throw 'Location permissions are permanently denied, we cannot request permissions.';
     }
 
-    // When we reach here, permissions are granted and we can
-    // continue accessing the position of the device.
     return await Geolocator.getCurrentPosition();
   }
 }
