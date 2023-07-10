@@ -20,7 +20,6 @@ class _HomePageState extends State<HomePage> {
   String code = 'home';
   Position? devicePosition;
   String? icon;
-  bool isFavorite = false;
 
   List<String> icons = [];
   List<double> temperatures = [];
@@ -205,18 +204,6 @@ class _HomePageState extends State<HomePage> {
                     buildWeatherCards(context),
                     const SizedBox(
                       height: 25,
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        isFavorite ? Icons.star : Icons.star_border,
-                        size: 50,
-                        color: Colors.yellow,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          isFavorite = !isFavorite;
-                        });
-                      },
                     ),
                   ],
                 ),
