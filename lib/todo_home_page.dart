@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_weather_app/db_handler.dart';
+import 'package:flutter_weather_app/home_page.dart';
 import 'package:flutter_weather_app/model.dart';
 
 import 'add_update_page.dart';
@@ -44,7 +45,12 @@ class _TodoAppState extends State<TodoApp> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context);
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => HomePage(),
+              ),
+            );
           },
         ),
       ),
